@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Management</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Task Management</h1>
+        <form id="task-form">
+            <input type="text" id="task-name" placeholder="Task Name" required />
+            <textarea id="task-desc" placeholder="Task Description" required></textarea>
+            <button type="submit">Add Task</button>
+        </form>
+        <ul id="task-list"></ul>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+h1 {
+    text-align: center;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input, textarea {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    background-color: #fafafa;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 5px;
+}
+
+.task-completed {
+    text-decoration: line-through;
+}
+
+const taskForm = document.getElementById('task-form');
+const taskName = document.getElementById('task-name');
+const taskDesc = document.getElementById('task-desc');
+const taskList = document.getElementById('task-list');
+
+const apiUrl = 'http://localhost:8080/api/tasks';
+
+// Fetch tasks and display them
+function fetchTasks() {
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            taskList.innerHTML = '';
+            data.forEach(task => {
+                const li = document.createElement('li');
+                li.textContent = `${task.name} - ${task.description}`;
+                if (task.completed) {
+                    li.classList.add('task-completed');
+                }
+                taskList.appendChild(li);
+            });
+        });
+}
+taskForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const task = {
+        name: taskName.value,
+        description: taskDesc.value,
+        completed: false
+    };
+
+    fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(task),
+    })
+        .then(response => response.json())
+        .then(data => {
+            taskName.value = '';
+            taskDesc.value = '';
+            fetchTasks();
+        });
+});
+
+fetchTasks();
+
+
